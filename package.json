@@ -1,0 +1,21 @@
+{
+  "name": "myWebCrawler",
+  "version": "1.0.0",
+  "description": "playing with crawler",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "js",
+    "crawler",
+    "node"
+  ],
+  "dependencies": {
+    "crawler": "*",
+    "cheerio": "0.18.0",
+    "mocha": "*"
+  },
+  "author": "touzbi",
+  "license": "MIT"
+}
