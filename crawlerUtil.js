@@ -1,4 +1,4 @@
-var Crawler = require("../node-crawler/lib/crawler");
+var Crawler = require("crawler");
 var WEBUNIT_DIR = './webUnits/';
 
 var getContent = function(url, selector, mainCallback, getElementProperty){
