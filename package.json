@@ -1,10 +1,11 @@
 {
   "name": "myWebCrawler",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "playing with crawler",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --bail --timeout 10000 test/*.js",
+    "start": "node ./main.js" 
   },
   "keywords": [
     "js",
@@ -17,7 +18,8 @@
   },
   "devDependencies": {
     "chai": "1.9.2",
-    "mocha": "*"
+    "mocha": "*",
+    "request": "*"
   },
   "author": "touzbi",
   "license": "MIT"
