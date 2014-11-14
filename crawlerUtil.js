@@ -1,10 +1,9 @@
 var Crawler = require("crawler");
-var WEBUNIT_DIR = './webUnits/';
 
-var getContent = function(url, selector, mainCallback, getElementProperty){
+module.exports.getContent = function(url, selector, mainCallback, getElementProperty){
 	var selectorToUse = selector ? selector : 'a';
-	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, e){
-		return $(e).attr('href');
+	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, $e){
+		return $e.attr('href');
 	};
 
 	var crawler = new Crawler({
@@ -12,13 +11,13 @@ var getContent = function(url, selector, mainCallback, getElementProperty){
 					if(error) {
 						mainCallback(error);
 					} else if($){
-						var contentBlock = { "url": response.uri.toString(), "content" : [] };	
+						var content = []; 
 
 						$(selector).each(function(index, a){
-							contentBlock.content.push( elementPropertyToUse($, a));
+							content.push(elementPropertyToUse($, $(a)));
 						});
 
-						mainCallback(null, contentBlock);
+						mainCallback(null, content);
 					}
 				}
 			});
@@ -27,10 +26,29 @@ var getContent = function(url, selector, mainCallback, getElementProperty){
 			crawler.queue(url);
 };
 
-function callWebUnit(name, operation, callback) {
-	var webUnit = require(WEBUNIT_DIR + name);
-	webUnit.operations[operation](callback);
-}
+module.exports.getSelector = function($e) {
+    var path, node = $e;
+    
+    while (node.length) {
+        var realNode = node.get(0), name = realNode.tagName;
+        if (!name) break;
+        name = name.toLowerCase();
 
-module.exports.getContent = getContent;
-module.exports.callWebUnit = callWebUnit;
+        var parent = node.parent();
+
+        var sameTagSiblings = parent.children(name);
+        if (sameTagSiblings.length > 1) { 
+            allSiblings = parent.children();
+            var index = allSiblings.index(realNode) + 1;
+            if (index > 1) {
+                name += ':nth-child(' + index + ')';
+            }
+        }
+
+        path = name + (path ? '>' + path : '');
+        node = parent;
+    }
+
+    return path;
+};
+
