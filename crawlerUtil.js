@@ -7,23 +7,23 @@ module.exports.getContent = function(url, selector, mainCallback, getElementProp
 	};
 
 	var crawler = new Crawler({
-				callback: function(error, response, $){
-					if(error) {
-						mainCallback(error);
-					} else if($){
-						var content = []; 
+		callback: function(error, response, $) {
+			if(error) {
+				mainCallback(error);
+			} else if($) {
+				var content = []; 
 
-						$(selector).each(function(index, a){
-							content.push(elementPropertyToUse($, $(a)));
-						});
+				$(selector).each(function(index, a) {
+					content.push(elementPropertyToUse($, $(a)));
+				});
 
-						mainCallback(null, content);
-					}
-				}
-			});
+				mainCallback(null, content);
+			}
+		}
+	});
 
-			// Start crawling
-			crawler.queue(url);
+	// Start crawling
+	crawler.queue(url);
 };
 
 module.exports.getSelector = function($e) {
