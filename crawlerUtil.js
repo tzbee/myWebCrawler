@@ -58,12 +58,12 @@ function getSelector($e) {
 function factory(uri, callback) {
 
 	var formatURL = function(url) {
-		return url.replace(/\/|:|\.|\?|=|&|%/gi, '');
+		return url.replace(/\/|:|\.|\?|=|&|%|#/gi, '');
 	}
 
 	var wu =  {
 		"id": formatURL(uri),
-		"domain": uri,
+		"url": uri,
 		"operations": {}
 	};
 
