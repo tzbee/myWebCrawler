@@ -1,6 +1,10 @@
 var Crawler = require("crawler");
+var fs = require('fs');
+var url = require('url');
 
-module.exports.getContent = function(url, selector, mainCallback, getElementProperty){
+var DIR = "./webUnits/";
+
+function getContent(url, selector, mainCallback, getElementProperty) {
 	var selectorToUse = selector ? selector : 'a';
 	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, $e){
 		return $e.attr('href');
@@ -26,7 +30,7 @@ module.exports.getContent = function(url, selector, mainCallback, getElementProp
 	crawler.queue(url);
 };
 
-module.exports.getSelector = function($e) {
+function getSelector($e) {
     var path, node = $e;
     
     while (node.length) {
@@ -52,3 +56,50 @@ module.exports.getSelector = function($e) {
     return path;
 };
 
+module.exports.factory = function(uri, callback) {
+
+	var formatURL = function(url) {
+		return url.replace(/\/|:|\.|\?|=|&|%/gi, '');
+	}
+
+	var wu =  {
+		"id": formatURL(uri),
+		"domain": uri,
+		"operations": {}
+	};
+
+	getContent(uri, 'a', 
+
+	//When content is retrieved
+	function(error, content) {
+		if(!error) {
+			for (var i = 0; i < content.length; i++) {
+				wu.operations[i] = content[i];
+			};
+
+			console.log('Web unit created');
+			callback(wu);
+		}
+	}, 
+
+	//What to do with each jQuery element found
+	function($, $e) {
+		return { 
+			"selector" : getSelector($e), 
+			"href": $e.attr('href') ? url.resolve(uri, $e.attr('href')) : '' 
+		};
+	});
+};
+
+module.exports.save = function (wu) {
+	var path = DIR + wu.id + ".json";
+	var jsonWU = JSON.stringify(wu, null, 4);
+
+	fs.writeFile(path, jsonWU, function(err) {
+	    if(err) {
+	        console.log(err);
+	    } else {
+	        console.log("Web unit saved");
+	    }
+	}); 
+}
