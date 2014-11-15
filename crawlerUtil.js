@@ -2,7 +2,6 @@ var Crawler = require("crawler");
 var fs = require('fs');
 var url = require('url');
 
-var DIR = "./webUnits/";
 
 function getContent(url, selector, mainCallback, getElementProperty) {
 	var selectorToUse = selector ? selector : 'a';
@@ -56,7 +55,7 @@ function getSelector($e) {
     return path;
 };
 
-module.exports.factory = function(uri, callback) {
+function factory(uri, callback) {
 
 	var formatURL = function(url) {
 		return url.replace(/\/|:|\.|\?|=|&|%/gi, '');
@@ -91,15 +90,49 @@ module.exports.factory = function(uri, callback) {
 	});
 };
 
-module.exports.save = function (wu) {
-	var path = DIR + wu.id + ".json";
-	var jsonWU = JSON.stringify(wu, null, 4);
+function save(wu) {
+	var DIR = "./webUnits/";
+	
+	var saveWU = function() {
+		var path = DIR + wu.id + ".json";
+		var jsonWU = JSON.stringify(wu, null, 4);
 
-	fs.writeFile(path, jsonWU, function(err) {
-	    if(err) {
-	        console.log(err);
-	    } else {
-	        console.log("Web unit saved");
-	    }
-	}); 
-}
+		fs.writeFile(path, jsonWU, function(err) {
+			if(err) {
+				console.log(err);
+			} else {
+				console.log("Web unit saved");
+			}
+		});
+	};
+
+	fs.exists(DIR, function (exists) {
+		if (!exists) {
+			fs.mkdir(DIR, function(err) {
+				if(!err) saveWU();
+			});
+		} else {
+			saveWU();
+		}
+	});
+};
+
+// Crawl the url and write information to json files
+function writeAndCrawl(url, depth) {
+	if(depth === 0) return;
+
+	factory(url, function(wu) {
+		save(wu);
+
+		for(key in wu.operations)  {
+			var href = wu.operations[key].href;
+			if(href) writeAndCrawl(href, depth-1);
+		}
+	});
+};  
+
+
+module.exports.getContent = getContent;
+module.exports.factory = factory;
+module.exports.save = save;
+module.exports.writeAndCrawl = writeAndCrawl;
