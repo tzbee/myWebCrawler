@@ -5,7 +5,7 @@ var url = require('url');
 
 function getContent(url, selector, mainCallback, getElementProperty) {
 	var selectorToUse = selector ? selector : 'a';
-	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, $e){
+	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, $e) {
 		return $e.attr('href');
 	};
 
@@ -57,6 +57,8 @@ function getSelector($e) {
 
 function factory(uri, callback) {
 
+	if(!uri) callback(new Error('no url was specified when creating wu'));
+
 	var formatURL = function(url) {
 		return url.replace(/\/|:|\.|\?|=|&|%|#/gi, '');
 	}
@@ -77,7 +79,9 @@ function factory(uri, callback) {
 			};
 
 			console.log('Web unit created');
-			callback(wu);
+			callback(null, wu);
+		} else {
+			callback(error);
 		}
 	}, 
 
