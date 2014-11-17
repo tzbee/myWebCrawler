@@ -20,7 +20,7 @@ var testFunction = function(document, done) {
 	});
 
 	done();
-}
+};
 
 var remoteTest = function(url, done) {
 	request(url, function (error, response, body) {
@@ -28,7 +28,7 @@ var remoteTest = function(url, done) {
 	    	testFunction(body, done);
 		}
 	});
-}
+};
 
 describe('Selector test', function() {
     
@@ -87,6 +87,30 @@ describe('getContent test', function(){
 			assert.equal(null, error);
 			assert.deepEqual([ "http://localhost:8000", "http://localhost:8001" ], content);
 			done();
+		});
+	});
+
+	it('should return the html content of the h1 tag', function(done) {
+
+    	var html = 	'<html>' + 
+						'<head>' + '</head>' + 
+						'<body>' + 
+							'<h1>' + 'Hello' + '</h1>' + 
+							'<a class="YES greeting" href="http://localhost:8000">' +
+								'Welcome' +
+							'</a>' +
+							'<a class="NO greeting" href="http://localhost:8001">' +
+								'HEOO' + 
+							'</a>' +
+						'</body>' + 
+					'</html>';
+
+		getContent(html, 'h1', function(error, content) {
+			assert.equal(null, error);
+			assert.deepEqual([ "Hello" ], content);
+			done();
+		}, function($, $e) {
+			return $e.html();
 		});
 	});
 });
