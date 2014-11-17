@@ -6,7 +6,7 @@ var url = require('url');
 var validUrl = require('valid-url');
 
 
-function getContent(url, selector, mainCallback, getElementProperty) {
+function getContent(source, selector, mainCallback, getElementProperty) {
 	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, $e) {
 		return $e.attr('href');
 	};
@@ -28,12 +28,12 @@ function getContent(url, selector, mainCallback, getElementProperty) {
 	});
 
 
-    if (validUrl.isUri(url)){
+    if (validUrl.isUri(source)){
 		// Start crawling
-		crawler.queue(url);
+		crawler.queue(source);
 	} else {
 		//If not a valid URL, assume it's plain html
-		crawler.queue({ html: url });
+		crawler.queue({ html: source });
     }
 }
 
