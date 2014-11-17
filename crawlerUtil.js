@@ -1,10 +1,12 @@
-var Crawler = require("crawler");
+'use strict';
+
+var Crawler = require('crawler');
 var fs = require('fs');
 var url = require('url');
+var validUrl = require('valid-url');
 
 
 function getContent(url, selector, mainCallback, getElementProperty) {
-	var selectorToUse = selector ? selector : 'a';
 	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, $e) {
 		return $e.attr('href');
 	};
@@ -25,9 +27,15 @@ function getContent(url, selector, mainCallback, getElementProperty) {
 		}
 	});
 
-	// Start crawling
-	crawler.queue(url);
-};
+
+    if (validUrl.isUri(url)){
+		// Start crawling
+		crawler.queue(url);
+	} else {
+		//If not a valid URL, assume it's plain html
+		crawler.queue({ html: url });
+    }
+}
 
 function getSelector($e) {
     var path, node = $e;
@@ -41,7 +49,7 @@ function getSelector($e) {
 
         var sameTagSiblings = parent.children(name);
         if (sameTagSiblings.length > 1) { 
-            allSiblings = parent.children();
+            var allSiblings = parent.children();
             var index = allSiblings.index(realNode) + 1;
             if (index > 1) {
                 name += ':nth-child(' + index + ')';
@@ -53,7 +61,7 @@ function getSelector($e) {
     }
 
     return path;
-};
+}
 
 function factory(uri, callback) {
 
@@ -61,7 +69,7 @@ function factory(uri, callback) {
 
 	var formatURL = function(url) {
 		return url.replace(/\/|:|\.|\?|=|&|%|#/gi, '');
-	}
+	};
 
 	var wu =  {
 		"id": formatURL(uri),
@@ -76,7 +84,7 @@ function factory(uri, callback) {
 		if(!error) {
 			for (var i = 0; i < content.length; i++) {
 				wu.operations[i] = content[i];
-			};
+			}
 
 			console.log('Web unit created');
 			callback(null, wu);
@@ -92,7 +100,7 @@ function factory(uri, callback) {
 			"href": $e.attr('href') ? url.resolve(uri, $e.attr('href')) : '' 
 		};
 	});
-};
+}
 
 function save(wu) {
 	var DIR = "./webUnits/";
@@ -119,24 +127,25 @@ function save(wu) {
 			saveWU();
 		}
 	});
-};
+}
 
 // Crawl the url and write information to json files
 function writeAndCrawl(url, depth) {
 	if(depth === 0) return;
 
-	factory(url, function(wu) {
+	factory(url, function(error, wu) {
 		save(wu);
 
-		for(key in wu.operations)  {
+		for(var key in wu.operations)  {
 			var href = wu.operations[key].href;
 			if(href) writeAndCrawl(href, depth-1);
 		}
 	});
-};  
+}
 
 
 module.exports.getContent = getContent;
+module.exports.getSelector = getSelector;
 module.exports.factory = factory;
 module.exports.save = save;
 module.exports.writeAndCrawl = writeAndCrawl;
