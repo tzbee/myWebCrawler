@@ -14,12 +14,14 @@
   ],
   "dependencies": {
     "crawler": "*",
-    "cheerio": "0.18.0"
+    "cheerio": "0.18.0",
+    "valid-url": "*"
   },
   "devDependencies": {
     "chai": "1.9.2",
     "mocha": "*",
-    "request": "*"
+    "request": "*",
+    "jshint": "*"
   },
   "author": "touzbi",
   "license": "MIT"
