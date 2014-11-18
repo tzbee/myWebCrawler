@@ -41,13 +41,9 @@ function getContent(source, mainCallback, selector, getElementProperty) {
 	});
 
 
-    if (validUrl.isUri(source)){
-		// Start crawling
-		crawler.queue(source);
-	} else {
-		//If not a valid URL, assume it's plain html
-		crawler.queue({ html: source });
-    }
+	// If not a valid URL, assume it's plain html
+	crawler.queue(validUrl.isUri(source) ? source : { html: source });
+
 }
 
 function getSelector($e) {
