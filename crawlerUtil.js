@@ -40,7 +40,6 @@ function getContent(source, mainCallback, selector, getElementProperty) {
 		}
 	});
 
-
 	// If not a valid URL, assume it's plain html
 	crawler.queue(validUrl.isUri(source) ? source : { html: source });
 

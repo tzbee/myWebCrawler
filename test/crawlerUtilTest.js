@@ -112,5 +112,26 @@ describe('getContent test', function(){
 			return $e.html();
 		});
 	});
+	it('should return the href content of "a" tags with a "YES" class ', function(done) {
+
+    	var html = 	'<html>' + 
+						'<head>' + '</head>' + 
+						'<body>' + 
+							'<h1>' + 'Hello' + '</h1>' + 
+							'<a class="YES greeting" href="http://localhost:8000">' +
+								'Welcome' +
+							'</a>' +
+							'<a class="NO greeting" href="http://localhost:8001">' +
+								'HEOO' + 
+							'</a>' +
+						'</body>' + 
+					'</html>';
+
+		getContent(html, function(error, content) {
+			assert.equal(null, error);
+			assert.deepEqual([ "http://localhost:8000" ], content);
+			done();
+		}, 'a.YES');
+	});
 });
  
