@@ -5,6 +5,17 @@ var fs = require('fs');
 var url = require('url');
 var validUrl = require('valid-url');
 
+/* Get content from a source url or plain html
+
+	* source: String,
+		URL to crawl or plain html 
+	* selector: String,
+		JQuery type selector defining which DOM element to selector
+	* mainCallback: Function(error, content),
+		The main call back function returning the content in the form of a list
+	* getElementProperty: Function($, $e) [optional],
+		Callback defining which data to get from each selected DOM element
+		(Default: href attribute) */
 
 function getContent(source, selector, mainCallback, getElementProperty) {
 	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, $e) {
