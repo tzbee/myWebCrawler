@@ -10,12 +10,12 @@ var validUrl = require('valid-url');
 	* source: String,
 		URL to crawl or plain html 
 	* selector: String,
-		JQuery type selector defining which DOM element to selector
+		JQuery type selector defining which DOM element to select
 	* mainCallback: Function(error, content),
-		The main call back function returning the content in the form of a list
+		The main call back function returning the content as an Array
 	* getElementProperty: Function($, $e) [optional],
 		Callback defining which data to get from each selected DOM element
-		(Default: href attribute) */
+		(default: href attribute) */
 
 function getContent(source, selector, mainCallback, getElementProperty) {
 	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, $e) {
