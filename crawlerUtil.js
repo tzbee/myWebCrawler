@@ -17,7 +17,8 @@ var validUrl = require('valid-url');
 		Callback defining which data to get from each selected DOM element
 		(default: href attribute) */
 
-function getContent(source, selector, mainCallback, getElementProperty) {
+function getContent(source, mainCallback, selector, getElementProperty) {
+	var selectorToUse = selector ? selector : 'a';
 	var elementPropertyToUse = getElementProperty ? getElementProperty : function($, $e) {
 		return $e.attr('href');
 	};
@@ -29,7 +30,7 @@ function getContent(source, selector, mainCallback, getElementProperty) {
 			} else if($) {
 				var content = []; 
 
-				$(selector).each(function(index, a) {
+				$(selectorToUse).each(function(index, a) {
 					content.push(elementPropertyToUse($, $(a)));
 				});
 
@@ -88,7 +89,7 @@ function factory(uri, callback) {
 		"operations": {}
 	};
 
-	getContent(uri, 'a', 
+	getContent(uri, 
 
 	//When content is retrieved
 	function(error, content) {
@@ -102,7 +103,7 @@ function factory(uri, callback) {
 		} else {
 			callback(error);
 		}
-	}, 
+	}, 'a', 
 
 	//What to do with each jQuery element found
 	function($, $e) {

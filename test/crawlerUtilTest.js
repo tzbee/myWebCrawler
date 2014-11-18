@@ -7,7 +7,6 @@ var getSelector = crawlerUtil.getSelector;
 var getContent = crawlerUtil.getContent;
 
 
-
 var testFunction = function(document, done) {
 	var $ = cheerio.load(document);
 	var $a = $('a');
@@ -83,7 +82,7 @@ describe('getContent test', function(){
 						'</body>' + 
 					'</html>';
 
-		getContent(html, 'a', function(error, content) {
+		getContent(html,  function(error, content) {
 			assert.equal(null, error);
 			assert.deepEqual([ "http://localhost:8000", "http://localhost:8001" ], content);
 			done();
@@ -105,11 +104,11 @@ describe('getContent test', function(){
 						'</body>' + 
 					'</html>';
 
-		getContent(html, 'h1', function(error, content) {
+		getContent(html, function(error, content) {
 			assert.equal(null, error);
 			assert.deepEqual([ "Hello" ], content);
 			done();
-		}, function($, $e) {
+		}, 'h1', function($, $e) {
 			return $e.html();
 		});
 	});
