@@ -29,13 +29,9 @@ function getContent(source, mainCallback, selector, getElementProperty) {
 			if(error) {
 				mainCallback(error);
 			} else if($) {
-				var content = []; 
-
-				$(selectorToUse).each(function(index, a) {
-					content.push(elementPropertyToUse($, $(a)));
-				});
-
-				mainCallback(null, content);
+				mainCallback(null, $(selectorToUse).map(function(index, a) {
+					return elementPropertyToUse($, $(a));
+				}).get());
 			}
 		}
 	});
