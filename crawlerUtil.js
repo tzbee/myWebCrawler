@@ -1,9 +1,16 @@
 'use strict';
 
 var Crawler = require('crawler');
-var fs = require('fs');
 var url = require('url');
 var validUrl = require('valid-url');
+var fs = require('fs');
+var prompt = require('prompt');
+var cheerio = require('cheerio');
+var _ = require('lodash');
+var request = require('request');
+var natural = require('natural');
+var stemmer = natural.PorterStemmer;
+stemmer.attach();
 
 /* Get content from a source url or plain html
 
@@ -76,9 +83,9 @@ function factory(uri, callback) {
 	};
 
 	var wu =  {
-		"id": formatURL(uri),
-		"url": uri,
-		"operations": {}
+		'id': formatURL(uri),
+		'url': uri,
+		'operations': {}
 	};
 
 	getContent(uri, 
@@ -100,24 +107,38 @@ function factory(uri, callback) {
 	//What to do with each jQuery element found
 	function($, $e) {
 		return { 
-			"selector" : getSelector($e), 
-			"href": $e.attr('href') ? url.resolve(uri, $e.attr('href')) : '' 
+			'selector' : getSelector($e), 
+			'href': $e.attr('href') ? url.resolve(uri, $e.attr('href')) : '' 
 		};
 	});
 }
 
+
+function writeJSON(data, outputFilename, callback) {
+	fs.writeFile(outputFilename, JSON.stringify(data, null, 2), function(err) {
+	    if(err) {
+	      console.log(err);
+	    } else {
+	      console.log('JSON saved to ' + outputFilename);
+	    }
+
+	    if (callback) callback();
+	});
+}
+
+
 function save(wu) {
-	var DIR = "./webUnits/";
+	var DIR = './webUnits/';
 	
 	var saveWU = function() {
-		var path = DIR + wu.id + ".json";
+		var path = DIR + wu.id + '.json';
 		var jsonWU = JSON.stringify(wu, null, 4);
 
 		fs.writeFile(path, jsonWU, function(err) {
 			if(err) {
 				console.log(err);
 			} else {
-				console.log("Web unit saved");
+				console.log('Web unit saved');
 			}
 		});
 	};
@@ -148,6 +169,97 @@ function writeAndCrawl(url, depth) {
 }
 
 
+
+function getBookmarks(callback) {
+
+	fs.readFile(__dirname + '/bookmarks.html', 'utf8', function(err, html) {
+
+		var $ = cheerio.load(html);
+
+		callback($('a').map(function(i, e) {
+			return $(e).attr('href');
+		}).get());
+
+	});
+
+}
+
+
+
+
+
+function manualPrompt(keys, callback) {
+
+	prompt.get(keys, function (err, result) {
+
+		var output = {};
+
+		for (var i = 0; i < keys.length; i++) {
+			output[keys[i]] = result[keys[i]] === 'true' ? 1 : 0;
+		}
+
+		callback(output);
+	});
+}
+
+
+function trainerPrompt(keys, callback) {
+	
+	//
+	// Start the prompt
+	//
+
+	prompt.start();
+
+	prompt.get('manual', function (err, result) {
+		if(result.manual === 'true') {
+			manualPrompt(keys, callback);
+		} else {
+			var output = {};
+
+			for (var i = 0; i < keys.length; i++) {
+				output[keys[i]] = 0;
+			}
+
+			callback(output);
+		}
+	});
+}
+
+
+function getSemantics(htmlDocument) {
+	var $ = cheerio.load(htmlDocument);
+	var text = $('html').text();
+	return _.countBy(text.tokenizeAndStem());
+}
+
+
+function urlToSemantics(url, callback) {
+	request(url, function(error, response, body) {
+		if (!error && response.statusCode === 200) {
+			return callback(getSemantics(body));
+		}
+	});
+}
+
+
+function createWU(url, output, callback) {
+
+	urlToSemantics(url, function(occ) {
+		callback(
+			{
+				url: url,
+				occ: occ,
+				out: output
+			}
+		);
+	});
+}
+
+module.exports.getBookmarks = getBookmarks;
+module.exports.trainerPrompt = trainerPrompt;
+module.exports.writeJSON = writeJSON;
+module.exports.createWU = createWU;
 module.exports.getContent = getContent;
 module.exports.getSelector = getSelector;
 module.exports.factory = factory;
