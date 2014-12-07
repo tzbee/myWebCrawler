@@ -1,13 +1,12 @@
 'use strict';
 
 var Crawler = require('crawler');
-var url = require('url');
 var validUrl = require('valid-url');
 var fs = require('fs');
 var prompt = require('prompt');
 var cheerio = require('cheerio');
-var _ = require('lodash');
 var request = require('request');
+var _ = require('lodash');
 var natural = require('natural');
 var stemmer = natural.PorterStemmer;
 stemmer.attach();
@@ -74,45 +73,6 @@ function getSelector($e) {
     return path;
 }
 
-function factory(uri, callback) {
-
-	if(!uri) callback(new Error('no url was specified when creating wu'));
-
-	var formatURL = function(url) {
-		return url.replace(/\/|:|\.|\?|=|&|%|#/gi, '');
-	};
-
-	var wu =  {
-		'id': formatURL(uri),
-		'url': uri,
-		'operations': {}
-	};
-
-	getContent(uri, 
-
-	//When content is retrieved
-	function(error, content) {
-		if(!error) {
-			for (var i = 0; i < content.length; i++) {
-				wu.operations[i] = content[i];
-			}
-
-			console.log('Web unit created');
-			callback(null, wu);
-		} else {
-			callback(error);
-		}
-	}, 'a', 
-
-	//What to do with each jQuery element found
-	function($, $e) {
-		return { 
-			'selector' : getSelector($e), 
-			'href': $e.attr('href') ? url.resolve(uri, $e.attr('href')) : '' 
-		};
-	});
-}
-
 
 function writeJSON(data, outputFilename, callback) {
 	fs.writeFile(outputFilename, JSON.stringify(data, null, 2), function(err) {
@@ -127,20 +87,13 @@ function writeJSON(data, outputFilename, callback) {
 }
 
 
+var counter = 0;
+
 function save(wu) {
 	var DIR = './webUnits/';
 	
 	var saveWU = function() {
-		var path = DIR + wu.id + '.json';
-		var jsonWU = JSON.stringify(wu, null, 4);
-
-		fs.writeFile(path, jsonWU, function(err) {
-			if(err) {
-				console.log(err);
-			} else {
-				console.log('Web unit saved');
-			}
-		});
+		writeJSON(wu, DIR + counter++ + '.json');
 	};
 
 	fs.exists(DIR, function (exists) {
@@ -153,21 +106,6 @@ function save(wu) {
 		}
 	});
 }
-
-// Crawl the url and write information to json files
-function writeAndCrawl(url, depth) {
-	if(depth === 0) return;
-
-	factory(url, function(error, wu) {
-		save(wu);
-
-		for(var key in wu.operations)  {
-			var href = wu.operations[key].href;
-			if(href) writeAndCrawl(href, depth-1);
-		}
-	});
-}
-
 
 
 function getBookmarks(callback) {
@@ -183,9 +121,6 @@ function getBookmarks(callback) {
 	});
 
 }
-
-
-
 
 
 function manualPrompt(keys, callback) {
@@ -227,17 +162,29 @@ function trainerPrompt(keys, callback) {
 }
 
 
-function getSemantics(htmlDocument) {
+function parseHTML(htmlDocument) {
 	var $ = cheerio.load(htmlDocument);
-	var text = $('html').text();
-	return _.countBy(text.tokenizeAndStem());
+	$('script').remove();
+	return $(':root').text();
+}
+
+function tokenizeAndFilter(text) {
+	return text
+		   .tokenizeAndStem()
+		   .filter(function(token) {
+				return isNaN(token);
+		    })
+		   .filter(function(token) {
+		   		return token.length>2;
+		   });
 }
 
 
 function urlToSemantics(url, callback) {
 	request(url, function(error, response, body) {
 		if (!error && response.statusCode === 200) {
-			return callback(getSemantics(body));
+			var result = _.countBy(tokenizeAndFilter(parseHTML(body)));
+			callback(result);
 		}
 	});
 }
@@ -258,10 +205,8 @@ function createWU(url, output, callback) {
 
 module.exports.getBookmarks = getBookmarks;
 module.exports.trainerPrompt = trainerPrompt;
-module.exports.writeJSON = writeJSON;
 module.exports.createWU = createWU;
-module.exports.getContent = getContent;
-module.exports.getSelector = getSelector;
-module.exports.factory = factory;
 module.exports.save = save;
-module.exports.writeAndCrawl = writeAndCrawl;
+module.exports.tokenizeAndFilter = tokenizeAndFilter;
+module.exports.parseHTML = parseHTML;
+
