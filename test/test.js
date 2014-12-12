@@ -2,27 +2,10 @@
 
 var brain = require('brain');
 var net = new brain.NeuralNetwork();
-var tzbUtil = require('./crawlerUtil');
+var tzbUtil = require('../lib/crawlerUtil');
+var parseHTML= tzbUtil.parseHTML;
 
-var trainingData = [
-	{
-		input:[0, 1],
-		output: [1]
-	},
+var html = '<html><body><h1>hiiiiiiiiiiiiiiiii</h1>regrger<h2>mmmmmh</h2></body></html>';
 
-	{
-		input:[1, 0],
-		output: [0]
-	},
 
-	{
-		input:[1, 1],
-		output: [1]
-	}
-];
-
-net.train(trainingData);
-
-var output = net.run([0, 1]);
-
-console.log(output);
+console.log(parseHTML(html));
